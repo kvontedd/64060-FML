@@ -1,0 +1,82 @@
+---
+title: "FML-Assignment_1"
+author: "Keerthana"
+date: "2024-02-05"
+output:
+  word_document: default
+  html_document: default
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+```{r} 
+library(readxl)
+BankChurn <- read.csv("D:/SUBJECTS/Keerthana/BankChurners.csv")
+View(BankChurn)
+```
+
+
+
+#printing the descriptive Statistics
+```{r}
+summary(BankChurn)
+```
+
+#Printing the Quantitative Varaibles
+```{r}
+mean(BankChurn$Customer_Age)
+```
+
+```{r}
+median(BankChurn$Total_Revolving_Bal)
+```
+
+```{r}
+summary(BankChurn$Total_Trans_Amt)
+```
+
+# Printing the Qualitative Variables
+```{r}
+summary(BankChurn$Education_Level)
+```
+
+```{r}
+summary(BankChurn$Gender) 
+```
+
+# Printing the transformation of Total Trans Ct 
+```{r}
+# Assuming df is your data frame
+BankChurn$Total_Trans_Ct <- sqrt(BankChurn$Total_Trans_Ct)
+
+# Print the first few rows to see the changes
+head(BankChurn)
+
+```
+
+```{r}
+hist(BankChurn$Customer_Age,xlab ="Customer_Age",ylab ="Total_Trans_Amt",main ="Histogram of Age",col ="red")
+
+```
+
+```{r}
+# Assuming BankChurn is your data frame
+barplot(table(BankChurn$Attrition_Flag),
+        main = "Barplot of Attrition_Flag",
+        xlab = "Attrition_Flag",
+        ylab = "Frequency",
+        col = "red")  # Optional: Set the color of the bars
+
+```
+
+```{r}
+# Assuming df is your data frame
+plot(BankChurn$Total_Trans_Amt, BankChurn$Credit_Limit,
+     main = "Scatterplot of Total trans amt vs. Credit Limit",
+     xlab = "Total trans amt",
+     ylab = "Credit Limit",
+     col = "red")  # Optional: Set the color of the points
+
+```
