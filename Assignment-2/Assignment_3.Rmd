@@ -1,0 +1,149 @@
+---
+title: "Assignment_3"
+author: "Keerthana"
+date: "2024-03-11"
+output:
+  word_document: default
+  html_document: default
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+```{r}
+UNIVERSAL_Bank <- read.csv("/Users/keerthanavonteddu/Desktop/assignment-3_FML/UniversalBank.csv")
+summary(UNIVERSAL_Bank)
+```
+
+#Loading the packages 
+```{r}
+library(dplyr)
+```
+
+```{r}
+library(ISLR)
+```
+
+```{r}
+library(e1071)
+```
+
+```{r}
+library(caret)
+```
+
+```{r}
+library(class)
+```
+
+```{r}
+library(ggplot2)
+```
+
+```{r}
+library(tidyr)
+```
+
+```{r}
+library(gmodels)
+```
+
+```{r}
+library(lattice)
+```
+
+
+```{r}
+UNIVERSAL_Bank$Personal.Loan <- factor(UNIVERSAL_Bank$Personal.Loan)
+UNIVERSAL_Bank$Online <- factor(UNIVERSAL_Bank$Online)
+UNIVERSAL_Bank$CreditCard <- factor(UNIVERSAL_Bank$CreditCard)
+```
+
+
+# 1.
+```{r}
+set.seed(312)
+train_of_Index <- createDataPartition(UNIVERSAL_Bank$Personal.Loan,p = 0.6,list = FALSE)
+df.Train <- UNIVERSAL_Bank[train_of_Index,]
+validation.df <- UNIVERSAL_Bank[-train_of_Index,]
+```
+
+
+
+```{r}
+pv_table <- xtabs(~ CreditCard + Online + Personal.Loan,data = df.Train)
+ftable(pv_table)
+```
+
+# 2. 
+```{r}
+Probabality = 46/(46+480)
+Probabality
+```
+
+# 3. 
+```{r}
+table(Personal.Loan = df.Train$Personal.Loan, Online = df.Train$Online)
+table(Personal.Loan = df.Train$Personal.Loan, CreditCard = df.Train$CreditCard)
+table(Personal.Loan = df.Train$Personal.Loan)
+```
+
+# 4. 
+# (i)
+```{r}
+Probability_a <- 83/(83+205)
+Probability_a
+```
+
+
+# (ii)
+```{r}
+Probability_b <- 181/(181+107)
+Probability_b
+```
+
+# (iii)
+```{r}
+Probability_c <- 288/(288+2712)
+Probability_c
+```
+
+# (iv)
+```{r}
+Probability_d <- 777/(777+1935)
+Probability_d
+```
+
+# (v)
+```{r}
+Probability_e <- 1632/(1632+1080)
+Probability_e
+```
+
+# (vi)
+```{r}
+Probability_f <- 2712/(2712+288)
+Probability_f
+```
+
+
+# 5. 
+```{r}
+calculated_probabilities <- (Probability_a * Probability_b * Probability_c)/((Probability_a * Probability_b * Probability_c) + (Probability_d * Probability_e * Probability_f))
+calculated_probabilities
+```
+
+# 6.
+In question 2, we found a #Value of 0.08745247, which is almost the same as the value of 0.1003643 in question 5. The exact method and the naïve bayes technique are the same except that the former requires each independent variable to be precisely classified in order to make a prediction, while the latter does not. We can verify that the value derived from question 2 is more accurate. Taking into account that the exact values from the pivot table were utilized.
+
+
+# 7.
+```{r}
+naviebayes.model <- naiveBayes(Personal.Loan ~ Online + CreditCard, data = df.Train)
+to.predict = data.frame(Online=1, CreditCard= 1)
+predict(naviebayes.model, to.predict,type = 'raw')
+```
+
+#We have the value 0.1003643 from task 5, and we have 0.9081939 from question 7. This is very much the same result that we got from assignment 5. ###Very little is changed as a result of rounding. The difference won't have an impact on the output's ranking order.
+
