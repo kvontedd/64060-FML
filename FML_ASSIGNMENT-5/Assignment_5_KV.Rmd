@@ -1,0 +1,199 @@
+---
+title: "keerthana_FML_A5"
+author: "Keerthana"
+date: "`r Sys.Date()`"
+output:
+  word_document: default
+  html_document: default
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+#all Packages loaded in the background
+
+#Taking "cereal_data" as our dataframe, load the Cerials dataset, then provide an overview of it
+
+```{r}
+library(caret)
+library(factoextra)
+library(ggplot2)
+library(ISLR)
+library(dplyr)
+library(tidyverse)
+library(proxy)
+library(NbClust)
+library(ppclust)
+library(dendextend)
+library(cluster)
+library(tinytex)
+cereal_data <- read.csv("/Users/keerthanavonteddu/Downloads/Cereals.csv")
+head(cereal_data)
+summary(cereal_data)
+```
+
+```{r}
+str(cereal_data)
+dim(cereal_data)
+```
+
+#The data will be scaled prior to the NA (Null) values being removed from the data set.
+```{r}
+#Make a copy of the data set for preparation. 
+cereal_scaled <- cereal_data
+#Before feeding the data set into a clustering method, scale it. 
+cereal_scaled[,c(4:16)] <- scale(cereal_data[,c(4:16)])
+#Take NA values out of the dataset. 
+Preprocessed.data <- na.omit(cereal_scaled)
+head(Preprocessed.data)
+```
+##Task A
+#Then, use the normalized measures as the Euclidean distance and cluster the data hierarchically. Use Agnes to compare the clustering from complete, single, average, and Ward linkages. Decide on the best course of action.
+```{r}
+#single linkage method
+#To generate the dissimilarity matrix for the numerical values in the data set, apply Euclidean distance measurements.
+eucledian_dist_df <- dist(Preprocessed.data[,c(4:16)],method = "euclidean")
+#To carry out hierarchical clustering, utilize the single linkage method. 
+H.cluster_single_Ag <- agnes(eucledian_dist_df,method = "single")
+#Ploting outcomes 
+plot(H.cluster_single_Ag,main = "Consumer Ratings Cereal - AGNES - single linkage method",xlab = "Cereal",ylab = "Height",cex.axis = 1,cex = 0.56,hang = -1)
+```
+
+```{r}
+#Complete linkage method
+H.cluster_complete_Ag <- agnes(eucledian_dist_df,method = "complete")
+#Ploting the outcomes
+plot(H.cluster_complete_Ag,main = "Consumer Ratings Cereal - AGNES - complete linkage method",xlab = "Cereal",ylab = "Height",cex.axis = 1,cex = 0.56,hang = -1)
+```
+```{r}
+#Average Linkage method
+H.cluster_average_Ag <- agnes(eucledian_dist_df, method = "average")
+#ploting the outcomes
+plot(H.cluster_average_Ag,main = "Consumer Ratings Cereal - AGNES - Average linkage method",xlab = "Cereal",ylab = "Height",cex.axis = 1,cex = 0.56,hang = -1)
+```
+
+```{r}
+#Ward Linkage Method
+H.cluster_ward_Ag <- agnes(eucledian_dist_df,method = "ward")
+#ploting the outcomes
+plot(H.cluster_ward_Ag,main = "Consumer Ratings Cereal - AGNES - Ward linkage method",xlab = "Cereal",ylab = "Height",cex.axis = 1,cex = 0.56,hang = -1)
+```
+#The best clustering strategy would be selected based on the agglomerative coefficient that is found for each method. The closer the value is to 1.0, the closer the clustering structure is. The strategy that produces a result that is closest to 1.0 will therefore be chosen.For Ward Method: 0.90, Average Linkage: 0.78, Complete Linkage: 0.84, and Single Linkage: 0.61
+#In this instance, the Ward technique will be chosen as the best clustering model.
+
+##Task B
+#The Ward approach will be selected as the optimal clustering model in this case
+
+```{r}
+#Elbow method
+fviz_nbclust(Preprocessed.data[,c(4:16)],hcut,method = "wss",k.max = 26) + labs(title = "Elbow Method: Optimal Number of Clusters") + geom_vline(xintercept = 12,linetype = 2)
+```
+
+```{r}
+#Silhouette Method
+fviz_nbclust(Preprocessed.data[,c(4:16)],hcut,method = "silhouette",k.max = 26) + labs(title = "Silhouette Method: Optimal Number of Clusters")
+
+```
+
+#Elbow method and silhouette concur that in this case, 12 clusters would be the appropriate quantity
+
+```{r}
+#The reference plot displays the 12 clusters of the Ward hierarchical tree. 
+plot(H.cluster_ward_Ag,main = "Ward Linkage - 12 Outlined Clusters", xlab = "Cereal", ylab = "Height",cex.axis = 1,cex = 0.56,hang = -1)
+rect.hclust(H.cluster_ward_Ag,k=12,border = 1:12)
+```
+
+##Task 3
+
+#Each Cluster Allotted to Data: 
+#The clusters assigned to each data set are located in "cereal_preprocessed_1".
+```{r}
+ward_cluster_12 <- cutree(H.cluster_ward_Ag,k=12)
+cereal_preprocessed_1 <- cbind(cluster = ward_cluster_12,Preprocessed.data)
+```
+
+```{r}
+#To evaluate the stability of the clusters, a 70-30 divide of the data set will be made. Thirty percent will be assigned based on the centroid nearest to them, following the creation of cluster assignments using the seventy percent.
+
+set.seed(10059)
+cereal_index <- createDataPartition(Preprocessed.data$protein,p=0.3,list = FALSE)
+preprocessed_divB <- Preprocessed.data[cereal_index,]
+preprocessed_divA <- Preprocessed.data[-cereal_index,]
+```
+
+#Retake the Partitioned Data Clustering Process:For the sake of this task, we will utilize the same ward clustering technique and K value (12) to evaluate the stability of the clusters. We will next assign clusters to the nearest places in Partition B for clusters 1 through 12.
+
+```{r}
+#To do hierarchical clustering on partitioned data, use the ward linkage approach 
+eucledian_A_d <- dist(preprocessed_divA[,c(4:16)],method = "euclidean")
+H.cluster_ward_A_agnes <- agnes(eucledian_A_d,method = "ward")
+plot(H.cluster_ward_A_agnes,main = "Consumer Cereal Ratings - Ward Linkage - Partition A",xlab="Cereal",ylab="Height",cex.axis=1,cex=0.56,hang=-1)
+```
+```{r}
+#For analysis, divide the tree into 12 clusters. 
+clusters_12_ward_A <- cutree(H.cluster_ward_A_agnes,k=12)
+preprocessed_cereal_A <- cbind(cluster = clusters_12_ward_A,preprocessed_divA)
+
+#We must compute the centroids for each cluster in order to identify which cluster's centroidal is closest to the data points in partition B.
+Ward_Centroid_A <- aggregate(preprocessed_cereal_A[,5:17],list(preprocessed_cereal_A$cluster),mean)
+Ward_Centroid_A <- data_frame(cluster = Ward_Centroid_A[,1],centroid = rowMeans(Ward_Centroid_A[,-c(1:4)]))
+Ward_Centroid_A <- Ward_Centroid_A$Centroid
+
+#Identify the centers of the Partition B data set.
+centers_dviB_preprocessed <- data.frame(preprocessed_divB[,1:3],center = rowMeans(preprocessed_divB[,4:16]))
+```
+```{r}
+#Assign the clusters based on the shortest distance between cluster centers
+preprocessed_cereal_B <- cbind(cluster = 
+c(4,8,7,3,5,6,7,11,11,10,8,5,10,1,10,1,4,12,12,7,7,1,4,9), 
+preprocessed_divB) 
+#To compare the A and B partitions to the original clusters, combine them
+preprocessed_cereal_A <- rbind(preprocessed_cereal_A,preprocessed_cereal_B)
+cereal_preprocessed_1 <- cereal_preprocessed_1[order(cereal_preprocessed_1$name),]
+preprocessed_cereal_A <- preprocessed_cereal_A[order(preprocessed_cereal_A$name),]
+
+#We can compare the number of matched assignments to determine the stability of the clusters after assigning the data using both methods (full data and partitioned data)
+sum(cereal_preprocessed_1$cluster == preprocessed_cereal_A$cluster)
+```
+#This finding clearly shows that the clusters are not very stable. When 70% of the available data were matched, only 35 out of the 74 observations had matching assignments. Consequently, 47% of the assignment is repeatable
+
+```{r}
+#Visualize the cluster allocations to look for changes between the two 
+#Plots of the original hierarchical clustering technique.
+ggplot(data = cereal_preprocessed_1,aes(cereal_preprocessed_1$cluster)) + geom_bar(fill = "pink") + labs(title = "Cluster assignments count - all original data") + labs(x="Cluster Assignment",y="Count") + guides(fill = FALSE) + scale_x_continuous(breaks=c(1:12)) + 
+scale_y_continuous(breaks=c(5,10,15,20), limits = c(0,25)) 
+
+```
+```{r}
+#Plot of the divided algorithm used to assign the remaining data  
+ggplot(data = preprocessed_cereal_A, aes(preprocessed_cereal_A$cluster)) + 
+geom_bar(fill = "pink") + 
+labs(title="Cluster Assignments Count - Partitioned Data") + 
+labs(x="Cluster Assignment", y="Count") + 
+guides(fill=FALSE) + 
+scale_x_continuous(breaks=c(1:12)) + 
+scale_y_continuous(breaks=c(5,10,15,20), limits = c(0,25))
+```
+#As can be seen visually, Cluster 3 shrank considerably using the partitioned data. Some of the other clusters became larger as a result. The chart suggests that a partition of the data results in a more uniform distribution of the clusters among the 12 clusters
+
+##Task D
+In this case, normalizing the data would not be appropriate. It wouldn't be appropriate since the nutritional data for cereal is adjusted and scaled according to the cereal sample under investigation. Because of this, the data set that was gathered may only include cereals that are incredibly poor in iron, fiber, and other minerals and extremely high in sugar. The amount of nutrients that a child will receive from the cereal is difficult to predict once it has been scaled or normalized throughout the sample set. Uninformed viewers would assume that a cereal with an iron score of 0.999 means it almost fully meets a child's iron needs; nevertheless, it could just be the best option within the sample set, offering very little in the way of nutrients.
+
+Thus, it would be more acceptable to prepare the data as a ratio to a child's daily recommended consumption of calories, fiber, carbohydrates, etc. This would allow analysts to make better-informed conclusions about the clusters during evaluation, while preventing a few more important variables from influencing the distance calculations. By examining the cluster average, an analyst can determine the percentage of a student's daily recommended nutrition that would come from XX cereal. This would enable the staff to make informed decisions when selecting from the "healthy" cereal clusters.
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
